@@ -3,16 +3,13 @@ package br.com.petra.service.mapper;
 import br.com.petra.domain.Investimento;
 import br.com.petra.service.dto.InvestimentoRequestDTO;
 import br.com.petra.service.dto.InvestimentoResponseDTO;
-import org.mapstruct.*;
-
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
+import org.mapstruct.ReportingPolicy;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
-public interface InvestimentoMapper {
-
-    DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+public interface InvestimentoMapper extends AbstractMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
@@ -32,30 +29,14 @@ public interface InvestimentoMapper {
     @Mapping(target = "valorInvestido", source = "valorInvestido", qualifiedByName = "stringToBigDecimal")
     void updateEntityFromDto(InvestimentoRequestDTO dto, @MappingTarget Investimento entity);
 
-    @Mapping(target = "valorInvestido", source = "valorInvestido", qualifiedByName = "bigDecimalToString")
-    @Mapping(target = "moedaId", source = "moeda.id")
-    @Mapping(target = "moedaCodigo", source = "moeda.codigo")
-    @Mapping(target = "tipoInvestimentoId", source = "tipoInvestimento.id")
-    @Mapping(target = "tipoInvestimentoCodigo", source = "tipoInvestimento.codigo")
-    @Mapping(target = "tipoIndexacaoId", source = "tipoIndexacao.id")
-    @Mapping(target = "tipoIndexacaoCodigo", source = "tipoIndexacao.codigo")
+    @Mapping(target = "valorInvestido", source = "valorInvestido", qualifiedByName = "bigDecimalToStringFourDecimalPlaces")
+    @Mapping(target = "moeda", source = "moeda.codigo")
+    @Mapping(target = "cpfInvestidor", source = "cpfInvestidor", qualifiedByName = "leftPadCpf")
+    @Mapping(target = "tipoInvestimento", source = "tipoInvestimento.codigo")
+    @Mapping(target = "tipoIndexacao", source = "tipoIndexacao.codigo")
     @Mapping(target = "dataCriacao", source = "createdAt", qualifiedByName = "localDateTimeToString")
     @Mapping(target = "dataAlteracao", source = "updatedAt", qualifiedByName = "localDateTimeToString")
     InvestimentoResponseDTO toDto(Investimento entity);
 
-    @Named("stringToBigDecimal")
-    default BigDecimal stringToBigDecimal(String value) {
-        return value == null ? null : new BigDecimal(value);
-    }
-
-    @Named("bigDecimalToString")
-    default String bigDecimalToString(BigDecimal value) {
-        return value == null ? null : value.toPlainString();
-    }
-
-    @Named("localDateTimeToString")
-    default String localDateTimeToString(LocalDateTime value) {
-        return value == null ? null : DATE_TIME_FORMATTER.format(value);
-    }
 }
 

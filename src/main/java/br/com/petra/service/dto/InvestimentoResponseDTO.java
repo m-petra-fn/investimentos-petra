@@ -6,12 +6,9 @@ public record InvestimentoResponseDTO(
         UUID id,
         String valorInvestido,
         String cpfInvestidor,
-        Long moedaId,
-        String moedaCodigo,
-        Long tipoInvestimentoId,
-        String tipoInvestimentoCodigo,
-        Long tipoIndexacaoId,
-        String tipoIndexacaoCodigo,
+        String moeda,
+        String tipoInvestimento,
+        String tipoIndexacao,
         String dataCriacao,
         String dataAlteracao
 ) {

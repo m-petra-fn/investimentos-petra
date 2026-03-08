@@ -3,18 +3,13 @@ package br.com.petra.service.mapper;
 import br.com.petra.domain.RendimentoDiario;
 import br.com.petra.service.dto.RendimentoRequestDTO;
 import br.com.petra.service.dto.RendimentoResponseDTO;
-import org.mapstruct.*;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
+import org.mapstruct.ReportingPolicy;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
-public interface RendimentoMapper {
-
-    DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE;
-    DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+public interface RendimentoMapper extends AbstractMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
@@ -40,37 +35,13 @@ public interface RendimentoMapper {
 
     @Mapping(target = "investimentoId", source = "investimento.id")
     @Mapping(target = "dataReferencia", source = "dataReferencia", qualifiedByName = "localDateToString")
-    @Mapping(target = "valorRendido", source = "valorRendido", qualifiedByName = "bigDecimalToString")
-    @Mapping(target = "irAtual", source = "irAtual", qualifiedByName = "bigDecimalToString")
-    @Mapping(target = "iofAtual", source = "iofAtual", qualifiedByName = "bigDecimalToString")
-    @Mapping(target = "valorLiquido", source = "valorLiquido", qualifiedByName = "bigDecimalToString")
+    @Mapping(target = "valorRendido", source = "valorRendido", qualifiedByName = "bigDecimalToStringFourDecimalPlaces")
+    @Mapping(target = "irAtual", source = "irAtual", qualifiedByName = "bigDecimalToStringFourDecimalPlaces")
+    @Mapping(target = "iofAtual", source = "iofAtual", qualifiedByName = "bigDecimalToStringFourDecimalPlaces")
+    @Mapping(target = "valorLiquido", source = "valorLiquido", qualifiedByName = "bigDecimalToStringFourDecimalPlaces")
     @Mapping(target = "dataCriacao", source = "createdAt", qualifiedByName = "localDateTimeToString")
     @Mapping(target = "dataAlteracao", source = "updatedAt", qualifiedByName = "localDateTimeToString")
     RendimentoResponseDTO toDto(RendimentoDiario entity);
 
-    @Named("stringToBigDecimal")
-    default BigDecimal stringToBigDecimal(String value) {
-        return value == null ? null : new BigDecimal(value);
-    }
-
-    @Named("bigDecimalToString")
-    default String bigDecimalToString(BigDecimal value) {
-        return value == null ? null : value.toPlainString();
-    }
-
-    @Named("stringToLocalDate")
-    default LocalDate stringToLocalDate(String value) {
-        return value == null ? null : LocalDate.parse(value, DATE_FORMATTER);
-    }
-
-    @Named("localDateToString")
-    default String localDateToString(LocalDate value) {
-        return value == null ? null : DATE_FORMATTER.format(value);
-    }
-
-    @Named("localDateTimeToString")
-    default String localDateTimeToString(LocalDateTime value) {
-        return value == null ? null : DATE_TIME_FORMATTER.format(value);
-    }
 }
 
