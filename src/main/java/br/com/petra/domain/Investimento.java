@@ -1,5 +1,6 @@
 package br.com.petra.domain;
 
+import br.com.petra.domain.converter.StringTrimConverter;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,6 +24,7 @@ public class Investimento extends AuditableEntity {
     private BigDecimal valorInvestido;
 
     @Column(nullable = false, length = 11)
+    @Convert(converter = StringTrimConverter.class)
     private String cpfInvestidor;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
