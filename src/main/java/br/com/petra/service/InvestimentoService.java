@@ -34,18 +34,18 @@ public class InvestimentoService {
     public ResponseJsonDTO<InvestimentoResponseDTO> create(InvestimentoRequestDTO dto) {
         Investimento entity = investimentoMapper.toEntity(dto);
         applyDomainReferences(entity, dto);
-        InvestimentoResponseDTO response = investimentoMapper.toDto(investimentoRepository.save(entity));
+        InvestimentoResponseDTO response = new InvestimentoResponseDTO(investimentoRepository.save(entity));
         return ResponseJsonDTO.single(response);
     }
 
     @Transactional(readOnly = true)
     public ResponseJsonDTO<InvestimentoResponseDTO> findById(UUID id) {
-        return ResponseJsonDTO.single(investimentoMapper.toDto(getEntity(id)));
+        return ResponseJsonDTO.single(new InvestimentoResponseDTO(getEntity(id)));
     }
 
     @Transactional(readOnly = true)
     public ResponseJsonDTO<List<InvestimentoResponseDTO>> findAll(Pageable pageable) {
-        Page<InvestimentoResponseDTO> page = investimentoRepository.findAll(pageable).map(investimentoMapper::toDto);
+        Page<InvestimentoResponseDTO> page = investimentoRepository.findAll(pageable).map(InvestimentoResponseDTO::new);
         return ResponseJsonDTO.paged(page);
     }
 
@@ -53,7 +53,7 @@ public class InvestimentoService {
         Investimento entity = getEntity(id);
         investimentoMapper.updateEntityFromDto(dto, entity);
         applyDomainReferences(entity, dto);
-        InvestimentoResponseDTO response = investimentoMapper.toDto(investimentoRepository.save(entity));
+        InvestimentoResponseDTO response = new InvestimentoResponseDTO(investimentoRepository.save(entity));
         return ResponseJsonDTO.single(response);
     }
 
@@ -84,4 +84,3 @@ public class InvestimentoService {
         );
     }
 }
-

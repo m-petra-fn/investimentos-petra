@@ -31,17 +31,17 @@ public class RendimentoService {
         RendimentoDiario entity = rendimentoMapper.toEntity(dto);
         entity.setInvestimento(investimentoRepository.findById(investimentoId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Investimento invalido")));
-        return ResponseJsonDTO.single(rendimentoMapper.toDto(rendimentoDiarioRepository.save(entity)));
+        return ResponseJsonDTO.single(new RendimentoResponseDTO(rendimentoDiarioRepository.save(entity)));
     }
 
     @Transactional(readOnly = true)
     public ResponseJsonDTO<RendimentoResponseDTO> findById(UUID id) {
-        return ResponseJsonDTO.single(rendimentoMapper.toDto(getEntity(id)));
+        return ResponseJsonDTO.single(new RendimentoResponseDTO(getEntity(id)));
     }
 
     @Transactional(readOnly = true)
     public ResponseJsonDTO<List<RendimentoResponseDTO>> findAll(Pageable pageable) {
-        Page<RendimentoResponseDTO> page = rendimentoDiarioRepository.findAll(pageable).map(rendimentoMapper::toDto);
+        Page<RendimentoResponseDTO> page = rendimentoDiarioRepository.findAll(pageable).map(RendimentoResponseDTO::new);
         return ResponseJsonDTO.paged(page);
     }
 
@@ -51,14 +51,14 @@ public class RendimentoService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Investimento nao encontrado");
         }
         Page<RendimentoResponseDTO> page = rendimentoDiarioRepository.findByInvestimentoId(investimentoId, pageable)
-                .map(rendimentoMapper::toDto);
+                .map(RendimentoResponseDTO::new);
         return ResponseJsonDTO.paged(page);
     }
 
     public ResponseJsonDTO<RendimentoResponseDTO> update(UUID id, RendimentoRequestDTO dto) {
         RendimentoDiario entity = getEntity(id);
         rendimentoMapper.updateEntityFromDto(dto, entity);
-        return ResponseJsonDTO.single(rendimentoMapper.toDto(rendimentoDiarioRepository.save(entity)));
+        return ResponseJsonDTO.single(new RendimentoResponseDTO(rendimentoDiarioRepository.save(entity)));
     }
 
     public void delete(UUID id) {
