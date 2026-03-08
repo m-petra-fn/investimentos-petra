@@ -7,11 +7,15 @@ import br.com.petra.repository.MoedaDominioRepository;
 import br.com.petra.repository.TipoIndexacaoDominioRepository;
 import br.com.petra.repository.TipoInvestimentoDominioRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
+@Order(1)
 public class DomainDataInitializer implements CommandLineRunner {
 
     private final MoedaDominioRepository moedaDominioRepository;
@@ -20,6 +24,8 @@ public class DomainDataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
+        log.info("Inicializando dados de dominio...");
+
         createMoeda("BRL", "Real Brasileiro");
 
         createTipoInvestimento("CDB", "Certificado de Deposito Bancario");
@@ -29,6 +35,8 @@ public class DomainDataInitializer implements CommandLineRunner {
 
         createTipoIndexacao("PREFIXADO", "Taxa definida no momento da aplicacao");
         createTipoIndexacao("POSFIXADO", "Taxa atrelada a um indice");
+
+        log.info("✓ Dados de dominio carregados com sucesso!");
     }
 
     private void createMoeda(String codigo, String descricao) {
@@ -36,7 +44,9 @@ public class DomainDataInitializer implements CommandLineRunner {
             MoedaDominio moeda = new MoedaDominio();
             moeda.setCodigo(codigo);
             moeda.setDescricao(descricao);
-            return moedaDominioRepository.save(moeda);
+            moeda = moedaDominioRepository.save(moeda);
+            log.debug("  → Moeda criada: {} ({})", codigo, descricao);
+            return moeda;
         });
     }
 
@@ -45,7 +55,9 @@ public class DomainDataInitializer implements CommandLineRunner {
             TipoInvestimentoDominio tipo = new TipoInvestimentoDominio();
             tipo.setCodigo(codigo);
             tipo.setDescricao(descricao);
-            return tipoInvestimentoDominioRepository.save(tipo);
+            tipo = tipoInvestimentoDominioRepository.save(tipo);
+            log.debug("  → Tipo Investimento criado: {} ({})", codigo, descricao);
+            return tipo;
         });
     }
 
@@ -54,7 +66,9 @@ public class DomainDataInitializer implements CommandLineRunner {
             TipoIndexacaoDominio tipo = new TipoIndexacaoDominio();
             tipo.setCodigo(codigo);
             tipo.setDescricao(descricao);
-            return tipoIndexacaoDominioRepository.save(tipo);
+            tipo = tipoIndexacaoDominioRepository.save(tipo);
+            log.debug("  → Tipo Indexacao criado: {} ({})", codigo, descricao);
+            return tipo;
         });
     }
 }
