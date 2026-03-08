@@ -6,7 +6,7 @@ import br.com.petra.service.dto.RendimentoResponseDTO;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,13 +34,20 @@ public class RendimentoResource {
     }
 
     @GetMapping("/rendimentos")
-    public Page<RendimentoResponseDTO> findAll(Pageable pageable) {
-        return rendimentoService.findAll(pageable);
+    public Page<RendimentoResponseDTO> findAll(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return rendimentoService.findAll(PageRequest.of(page, size));
     }
 
     @GetMapping("/investimentos/{investimentoId}/rendimentos")
-    public Page<RendimentoResponseDTO> findByInvestimento(@PathVariable UUID investimentoId, Pageable pageable) {
-        return rendimentoService.findByInvestimento(investimentoId, pageable);
+    public Page<RendimentoResponseDTO> findByInvestimento(
+            @PathVariable UUID investimentoId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return rendimentoService.findByInvestimento(investimentoId, PageRequest.of(page, size));
     }
 
     @PutMapping("/rendimentos/{id}")
@@ -54,4 +61,3 @@ public class RendimentoResource {
         rendimentoService.delete(id);
     }
 }
-

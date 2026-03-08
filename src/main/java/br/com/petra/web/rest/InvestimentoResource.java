@@ -6,7 +6,7 @@ import br.com.petra.service.dto.InvestimentoResponseDTO;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,8 +31,11 @@ public class InvestimentoResource {
     }
 
     @GetMapping
-    public Page<InvestimentoResponseDTO> findAll(Pageable pageable) {
-        return investimentoService.findAll(pageable);
+    public Page<InvestimentoResponseDTO> findAll(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return investimentoService.findAll(PageRequest.of(page, size));
     }
 
     @PutMapping("/{id}")
@@ -46,4 +49,3 @@ public class InvestimentoResource {
         investimentoService.delete(id);
     }
 }
-
