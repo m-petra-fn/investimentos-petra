@@ -4,8 +4,9 @@ import java.time.LocalDateTime;
 
 public record MetaDTO(
         LocalDateTime requestDateTime,
-        int totalRecords,
+        int page,
+        int size,
+        long totalRecords,
         int totalPages
 ) {
 }
-

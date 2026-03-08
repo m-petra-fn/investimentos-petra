@@ -5,6 +5,7 @@ import br.com.petra.repository.InvestimentoRepository;
 import br.com.petra.repository.RendimentoDiarioRepository;
 import br.com.petra.service.dto.RendimentoRequestDTO;
 import br.com.petra.service.dto.RendimentoResponseDTO;
+import br.com.petra.service.dto.ResponseJsonDTO;
 import br.com.petra.service.mapper.RendimentoMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -25,35 +27,38 @@ public class RendimentoService {
     private final InvestimentoRepository investimentoRepository;
     private final RendimentoMapper rendimentoMapper;
 
-    public RendimentoResponseDTO create(UUID investimentoId, RendimentoRequestDTO dto) {
+    public ResponseJsonDTO<RendimentoResponseDTO> create(UUID investimentoId, RendimentoRequestDTO dto) {
         RendimentoDiario entity = rendimentoMapper.toEntity(dto);
         entity.setInvestimento(investimentoRepository.findById(investimentoId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Investimento invalido")));
-        return rendimentoMapper.toDto(rendimentoDiarioRepository.save(entity));
+        return ResponseJsonDTO.single(rendimentoMapper.toDto(rendimentoDiarioRepository.save(entity)));
     }
 
     @Transactional(readOnly = true)
-    public RendimentoResponseDTO findById(UUID id) {
-        return rendimentoMapper.toDto(getEntity(id));
+    public ResponseJsonDTO<RendimentoResponseDTO> findById(UUID id) {
+        return ResponseJsonDTO.single(rendimentoMapper.toDto(getEntity(id)));
     }
 
     @Transactional(readOnly = true)
-    public Page<RendimentoResponseDTO> findAll(Pageable pageable) {
-        return rendimentoDiarioRepository.findAll(pageable).map(rendimentoMapper::toDto);
+    public ResponseJsonDTO<List<RendimentoResponseDTO>> findAll(Pageable pageable) {
+        Page<RendimentoResponseDTO> page = rendimentoDiarioRepository.findAll(pageable).map(rendimentoMapper::toDto);
+        return ResponseJsonDTO.paged(page);
     }
 
     @Transactional(readOnly = true)
-    public Page<RendimentoResponseDTO> findByInvestimento(UUID investimentoId, Pageable pageable) {
+    public ResponseJsonDTO<List<RendimentoResponseDTO>> findByInvestimento(UUID investimentoId, Pageable pageable) {
         if (!investimentoRepository.existsById(investimentoId)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Investimento nao encontrado");
         }
-        return rendimentoDiarioRepository.findByInvestimentoId(investimentoId, pageable).map(rendimentoMapper::toDto);
+        Page<RendimentoResponseDTO> page = rendimentoDiarioRepository.findByInvestimentoId(investimentoId, pageable)
+                .map(rendimentoMapper::toDto);
+        return ResponseJsonDTO.paged(page);
     }
 
-    public RendimentoResponseDTO update(UUID id, RendimentoRequestDTO dto) {
+    public ResponseJsonDTO<RendimentoResponseDTO> update(UUID id, RendimentoRequestDTO dto) {
         RendimentoDiario entity = getEntity(id);
         rendimentoMapper.updateEntityFromDto(dto, entity);
-        return rendimentoMapper.toDto(rendimentoDiarioRepository.save(entity));
+        return ResponseJsonDTO.single(rendimentoMapper.toDto(rendimentoDiarioRepository.save(entity)));
     }
 
     public void delete(UUID id) {

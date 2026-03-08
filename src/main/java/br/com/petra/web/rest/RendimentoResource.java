@@ -3,13 +3,14 @@ package br.com.petra.web.rest;
 import br.com.petra.service.RendimentoService;
 import br.com.petra.service.dto.RendimentoRequestDTO;
 import br.com.petra.service.dto.RendimentoResponseDTO;
+import br.com.petra.service.dto.ResponseJsonDTO;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -21,7 +22,7 @@ public class RendimentoResource {
 
     @PostMapping("/investimentos/{investimentoId}/rendimentos")
     @ResponseStatus(HttpStatus.CREATED)
-    public RendimentoResponseDTO create(
+    public ResponseJsonDTO<RendimentoResponseDTO> create(
             @PathVariable UUID investimentoId,
             @Valid @RequestBody RendimentoRequestDTO dto
     ) {
@@ -29,12 +30,12 @@ public class RendimentoResource {
     }
 
     @GetMapping("/rendimentos/{id}")
-    public RendimentoResponseDTO findById(@PathVariable UUID id) {
+    public ResponseJsonDTO<RendimentoResponseDTO> findById(@PathVariable UUID id) {
         return rendimentoService.findById(id);
     }
 
     @GetMapping("/rendimentos")
-    public Page<RendimentoResponseDTO> findAll(
+    public ResponseJsonDTO<List<RendimentoResponseDTO>> findAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
@@ -42,7 +43,7 @@ public class RendimentoResource {
     }
 
     @GetMapping("/investimentos/{investimentoId}/rendimentos")
-    public Page<RendimentoResponseDTO> findByInvestimento(
+    public ResponseJsonDTO<List<RendimentoResponseDTO>> findByInvestimento(
             @PathVariable UUID investimentoId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
@@ -51,7 +52,7 @@ public class RendimentoResource {
     }
 
     @PutMapping("/rendimentos/{id}")
-    public RendimentoResponseDTO update(@PathVariable UUID id, @Valid @RequestBody RendimentoRequestDTO dto) {
+    public ResponseJsonDTO<RendimentoResponseDTO> update(@PathVariable UUID id, @Valid @RequestBody RendimentoRequestDTO dto) {
         return rendimentoService.update(id, dto);
     }
 

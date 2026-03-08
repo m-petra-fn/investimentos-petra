@@ -3,13 +3,14 @@ package br.com.petra.web.rest;
 import br.com.petra.service.InvestimentoService;
 import br.com.petra.service.dto.InvestimentoRequestDTO;
 import br.com.petra.service.dto.InvestimentoResponseDTO;
+import br.com.petra.service.dto.ResponseJsonDTO;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -21,17 +22,17 @@ public class InvestimentoResource {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public InvestimentoResponseDTO create(@Valid @RequestBody InvestimentoRequestDTO dto) {
+    public ResponseJsonDTO<InvestimentoResponseDTO> create(@Valid @RequestBody InvestimentoRequestDTO dto) {
         return investimentoService.create(dto);
     }
 
     @GetMapping("/{id}")
-    public InvestimentoResponseDTO findById(@PathVariable UUID id) {
+    public ResponseJsonDTO<InvestimentoResponseDTO> findById(@PathVariable UUID id) {
         return investimentoService.findById(id);
     }
 
     @GetMapping
-    public Page<InvestimentoResponseDTO> findAll(
+    public ResponseJsonDTO<List<InvestimentoResponseDTO>> findAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
@@ -39,7 +40,7 @@ public class InvestimentoResource {
     }
 
     @PutMapping("/{id}")
-    public InvestimentoResponseDTO update(@PathVariable UUID id, @Valid @RequestBody InvestimentoRequestDTO dto) {
+    public ResponseJsonDTO<InvestimentoResponseDTO> update(@PathVariable UUID id, @Valid @RequestBody InvestimentoRequestDTO dto) {
         return investimentoService.update(id, dto);
     }
 

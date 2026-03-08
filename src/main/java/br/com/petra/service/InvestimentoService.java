@@ -7,6 +7,7 @@ import br.com.petra.repository.TipoIndexacaoDominioRepository;
 import br.com.petra.repository.TipoInvestimentoDominioRepository;
 import br.com.petra.service.dto.InvestimentoRequestDTO;
 import br.com.petra.service.dto.InvestimentoResponseDTO;
+import br.com.petra.service.dto.ResponseJsonDTO;
 import br.com.petra.service.mapper.InvestimentoMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -29,27 +31,30 @@ public class InvestimentoService {
     private final TipoIndexacaoDominioRepository tipoIndexacaoDominioRepository;
     private final InvestimentoMapper investimentoMapper;
 
-    public InvestimentoResponseDTO create(InvestimentoRequestDTO dto) {
+    public ResponseJsonDTO<InvestimentoResponseDTO> create(InvestimentoRequestDTO dto) {
         Investimento entity = investimentoMapper.toEntity(dto);
         applyDomainReferences(entity, dto);
-        return investimentoMapper.toDto(investimentoRepository.save(entity));
+        InvestimentoResponseDTO response = investimentoMapper.toDto(investimentoRepository.save(entity));
+        return ResponseJsonDTO.single(response);
     }
 
     @Transactional(readOnly = true)
-    public InvestimentoResponseDTO findById(UUID id) {
-        return investimentoMapper.toDto(getEntity(id));
+    public ResponseJsonDTO<InvestimentoResponseDTO> findById(UUID id) {
+        return ResponseJsonDTO.single(investimentoMapper.toDto(getEntity(id)));
     }
 
     @Transactional(readOnly = true)
-    public Page<InvestimentoResponseDTO> findAll(Pageable pageable) {
-        return investimentoRepository.findAll(pageable).map(investimentoMapper::toDto);
+    public ResponseJsonDTO<List<InvestimentoResponseDTO>> findAll(Pageable pageable) {
+        Page<InvestimentoResponseDTO> page = investimentoRepository.findAll(pageable).map(investimentoMapper::toDto);
+        return ResponseJsonDTO.paged(page);
     }
 
-    public InvestimentoResponseDTO update(UUID id, InvestimentoRequestDTO dto) {
+    public ResponseJsonDTO<InvestimentoResponseDTO> update(UUID id, InvestimentoRequestDTO dto) {
         Investimento entity = getEntity(id);
         investimentoMapper.updateEntityFromDto(dto, entity);
         applyDomainReferences(entity, dto);
-        return investimentoMapper.toDto(investimentoRepository.save(entity));
+        InvestimentoResponseDTO response = investimentoMapper.toDto(investimentoRepository.save(entity));
+        return ResponseJsonDTO.single(response);
     }
 
     public void delete(UUID id) {
