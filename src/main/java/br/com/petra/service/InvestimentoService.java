@@ -40,7 +40,7 @@ public class InvestimentoService {
 
     @Transactional(readOnly = true)
     public ResponseJsonDTO<InvestimentoResponseDTO> findById(UUID id) {
-        return ResponseJsonDTO.single(investimentoMapper.toDto(getEntity(id)));
+        return ResponseJsonDTO.single(investimentoMapper.toDto(getEntityByQueryDsl(id)));
     }
 
     @Transactional(readOnly = true)
@@ -66,6 +66,11 @@ public class InvestimentoService {
 
     private Investimento getEntity(UUID id) {
         return investimentoRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Investimento nao encontrado"));
+    }
+
+    private Investimento getEntityByQueryDsl(UUID id) {
+        return investimentoRepository.findByIdQueryDsl(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Investimento nao encontrado"));
     }
 

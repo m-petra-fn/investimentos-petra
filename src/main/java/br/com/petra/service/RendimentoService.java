@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -50,8 +51,31 @@ public class RendimentoService {
         if (!investimentoRepository.existsById(investimentoId)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Investimento nao encontrado");
         }
-        Page<RendimentoResponseDTO> page = rendimentoDiarioRepository.findByInvestimentoId(investimentoId, pageable)
+
+        Page<RendimentoResponseDTO> page = rendimentoDiarioRepository.findByInvestimentoIdQueryDsl(investimentoId, pageable)
                 .map(rendimentoMapper::toDto);
+
+        return ResponseJsonDTO.paged(page);
+    }
+
+    @Transactional(readOnly = true)
+    public ResponseJsonDTO<List<RendimentoResponseDTO>> findByInvestimentoAndPeriodo(
+            UUID investimentoId,
+            LocalDate fromDate,
+            LocalDate toDate,
+            Pageable pageable
+    ) {
+        if (!investimentoRepository.existsById(investimentoId)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Investimento nao encontrado");
+        }
+        if (fromDate.isAfter(toDate)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "fromDate nao pode ser maior que toDate");
+        }
+
+        Page<RendimentoResponseDTO> page = rendimentoDiarioRepository
+                .findByInvestimentoIdAndPeriodoQueryDsl(investimentoId, fromDate, toDate, pageable)
+                .map(rendimentoMapper::toDto);
+
         return ResponseJsonDTO.paged(page);
     }
 

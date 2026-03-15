@@ -7,9 +7,11 @@ import br.com.petra.service.dto.ResponseJsonDTO;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -45,10 +47,22 @@ public class RendimentoResource {
     @GetMapping("/investimentos/{investimentoId}/rendimentos")
     public ResponseJsonDTO<List<RendimentoResponseDTO>> findByInvestimento(
             @PathVariable UUID investimentoId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
-        return rendimentoService.findByInvestimento(investimentoId, PageRequest.of(page, size));
+        if (fromDate == null && toDate == null) {
+            return rendimentoService.findByInvestimento(investimentoId, PageRequest.of(page, size));
+        }
+        if (fromDate == null || toDate == null) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Informe fromDate e toDate juntos"
+            );
+        }
+
+        return rendimentoService.findByInvestimentoAndPeriodo(investimentoId, fromDate, toDate, PageRequest.of(page, size));
     }
 
     @PutMapping("/rendimentos/{id}")
