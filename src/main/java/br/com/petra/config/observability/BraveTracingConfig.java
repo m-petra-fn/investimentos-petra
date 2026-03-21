@@ -48,6 +48,7 @@ public class BraveTracingConfig {
                 .localServiceName(applicationName)
                 .currentTraceContext(currentTraceContext)
                 .propagationFactory(TraceContextPropagation.newFactoryBuilder().build())
+                .traceId128Bit(true)
                 .sampler(Sampler.create(samplingProbability))
                 .addSpanHandler(zipkinSpanHandler)
                 .build();

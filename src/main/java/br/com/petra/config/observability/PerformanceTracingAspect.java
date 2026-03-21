@@ -61,8 +61,9 @@ public class PerformanceTracingAspect {
         String className = joinPoint.getTarget().getClass().getSimpleName();
         String operationName = className + "." + methodName;
 
-        var span = tracer.nextSpan().name(operationName);
-        try (var _ignored = tracer.withSpan(span.start())) {
+        io.micrometer.tracing.Span parentSpan = tracer.currentSpan();
+        var span = (parentSpan != null ? tracer.nextSpan(parentSpan) : tracer.nextSpan()).name(operationName);
+        try (var ignored = tracer.withSpan(span.start())) {
             return executeWithTracing(joinPoint, layer, className, methodName, span);
         }
     }

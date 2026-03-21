@@ -71,11 +71,17 @@ public class ObservabilityDemoController {
     public Map<String, String> getTraceDiagnostics(HttpServletRequest request) {
         Span currentSpan = tracer.currentSpan();
         Map<String, String> diagnostics = new LinkedHashMap<>();
+        String incomingTraceparent = valueOrNA(request.getHeader("traceparent"));
+        String incomingTraceparentTraceId = extractTraceIdFromTraceparent(request.getHeader("traceparent"));
+        String currentTraceId = currentSpan != null && currentSpan.context() != null ? currentSpan.context().traceId() : "N/A";
         diagnostics.put("tracerBean", tracer.getClass().getName());
         diagnostics.put("hasCurrentSpan", Boolean.toString(currentSpan != null));
-        diagnostics.put("traceId", currentSpan != null && currentSpan.context() != null ? currentSpan.context().traceId() : "N/A");
+        diagnostics.put("traceId", currentTraceId);
         diagnostics.put("spanId", currentSpan != null && currentSpan.context() != null ? currentSpan.context().spanId() : "N/A");
-        diagnostics.put("incomingTraceparent", valueOrNA(request.getHeader("traceparent")));
+        diagnostics.put("incomingTraceparent", incomingTraceparent);
+        diagnostics.put("incomingTraceparentTraceId", incomingTraceparentTraceId);
+        diagnostics.put("isTraceparentContinued", Boolean.toString(!"N/A".equals(incomingTraceparentTraceId)
+                && incomingTraceparentTraceId.equalsIgnoreCase(currentTraceId)));
         diagnostics.put("incomingB3", valueOrNA(request.getHeader("b3")));
         return diagnostics;
     }
@@ -96,6 +102,15 @@ public class ObservabilityDemoController {
 
     private String valueOrNA(String value) {
         return value == null || value.isBlank() ? "N/A" : value;
+    }
+
+    private String extractTraceIdFromTraceparent(String traceparent) {
+        if (traceparent == null || traceparent.isBlank()) {
+            return "N/A";
+        }
+
+        String[] parts = traceparent.trim().split("-");
+        return parts.length >= 4 ? parts[1] : "N/A";
     }
 }
 
