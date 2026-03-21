@@ -18,6 +18,9 @@ import java.io.IOException;
 @Order(Ordered.HIGHEST_PRECEDENCE + 10)
 public class TracingPropagationFilter extends OncePerRequestFilter {
 
+    private static final String FAPI_HEADER_NAME = "x-fapi-interaction-id";
+    private static final String ZIPKIN_TAG_FAPI_INTERACTION_ID = "fapi.interaction_id";
+
     private final Tracing tracing;
 
     public TracingPropagationFilter(Tracing tracing) {
@@ -31,6 +34,12 @@ public class TracingPropagationFilter extends OncePerRequestFilter {
         brave.Span span = tracing.tracer().nextSpan(extracted)
                 .name(request.getMethod() + " " + request.getRequestURI())
                 .start();
+
+        String fapiInteractionId = request.getHeader(FAPI_HEADER_NAME);
+        if (fapiInteractionId != null && !fapiInteractionId.isBlank()) {
+            // Tag no span raiz para facilitar query no Zipkin.
+            span.tag(ZIPKIN_TAG_FAPI_INTERACTION_ID, fapiInteractionId);
+        }
 
         try (var ignored = tracing.currentTraceContext().newScope(span.context())) {
             filterChain.doFilter(request, response);
