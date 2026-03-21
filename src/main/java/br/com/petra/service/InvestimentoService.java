@@ -10,6 +10,7 @@ import br.com.petra.service.dto.InvestimentoResponseDTO;
 import br.com.petra.service.dto.ResponseJsonDTO;
 import br.com.petra.service.mapper.InvestimentoMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -23,6 +24,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class InvestimentoService {
 
     private final InvestimentoRepository investimentoRepository;
@@ -32,6 +34,7 @@ public class InvestimentoService {
     private final InvestimentoMapper investimentoMapper;
 
     public ResponseJsonDTO<InvestimentoResponseDTO> create(InvestimentoRequestDTO dto) {
+        log.info("Iniciando criacao de investimento para cpfInvestidor={}", dto.cpfInvestidor());
         Investimento entity = investimentoMapper.toEntity(dto);
         applyDomainReferences(entity, dto);
         InvestimentoResponseDTO response = investimentoMapper.toDto(investimentoRepository.save(entity));
@@ -40,16 +43,19 @@ public class InvestimentoService {
 
     @Transactional(readOnly = true)
     public ResponseJsonDTO<InvestimentoResponseDTO> findById(UUID id) {
+        log.info("Buscando investimento por id={}", id);
         return ResponseJsonDTO.single(investimentoMapper.toDto(getEntity(id)));
     }
 
     @Transactional(readOnly = true)
     public ResponseJsonDTO<List<InvestimentoResponseDTO>> findAll(Pageable pageable) {
+        log.info("Listando investimentos. pageNumber={}, pageSize={}", pageable.getPageNumber(), pageable.getPageSize());
         Page<InvestimentoResponseDTO> page = investimentoRepository.findAll(pageable).map(investimentoMapper::toDto);
         return ResponseJsonDTO.paged(page);
     }
 
     public ResponseJsonDTO<InvestimentoResponseDTO> update(UUID id, InvestimentoRequestDTO dto) {
+        log.info("Atualizando investimento id={} para cpfInvestidor={}", id, dto.cpfInvestidor());
         Investimento entity = getEntity(id);
         investimentoMapper.updateEntityFromDto(dto, entity);
         applyDomainReferences(entity, dto);
@@ -58,7 +64,9 @@ public class InvestimentoService {
     }
 
     public void delete(UUID id) {
+        log.info("Removendo investimento id={}", id);
         if (!investimentoRepository.existsById(id)) {
+            log.warn("Tentativa de remover investimento inexistente id={}", id);
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Investimento nao encontrado");
         }
         investimentoRepository.deleteById(id);
@@ -66,21 +74,33 @@ public class InvestimentoService {
 
     private Investimento getEntity(UUID id) {
         return investimentoRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Investimento nao encontrado"));
+                .orElseThrow(() -> {
+                    log.warn("Investimento nao encontrado para id={}", id);
+                    return new ResponseStatusException(HttpStatus.NOT_FOUND, "Investimento nao encontrado");
+                });
     }
 
     private void applyDomainReferences(Investimento entity, InvestimentoRequestDTO dto) {
         entity.setMoeda(
                 moedaDominioRepository.findById(dto.moedaId())
-                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Moeda invalida"))
+                        .orElseThrow(() -> {
+                            log.warn("Moeda invalida para moedaId={}", dto.moedaId());
+                            return new ResponseStatusException(HttpStatus.BAD_REQUEST, "Moeda invalida");
+                        })
         );
         entity.setTipoInvestimento(
                 tipoInvestimentoDominioRepository.findById(dto.tipoInvestimentoId())
-                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tipo de investimento invalido"))
+                        .orElseThrow(() -> {
+                            log.warn("Tipo de investimento invalido para tipoInvestimentoId={}", dto.tipoInvestimentoId());
+                            return new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tipo de investimento invalido");
+                        })
         );
         entity.setTipoIndexacao(
                 tipoIndexacaoDominioRepository.findById(dto.tipoIndexacaoId())
-                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tipo de indexacao invalido"))
+                        .orElseThrow(() -> {
+                            log.warn("Tipo de indexacao invalido para tipoIndexacaoId={}", dto.tipoIndexacaoId());
+                            return new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tipo de indexacao invalido");
+                        })
         );
     }
 }
