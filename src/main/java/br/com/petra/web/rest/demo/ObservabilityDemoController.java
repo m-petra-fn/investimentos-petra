@@ -5,6 +5,7 @@ import io.micrometer.tracing.Tracer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,9 +32,14 @@ public class ObservabilityDemoController {
     private Tracer tracer;
 
     @GetMapping("/test")
-    public String testTracing() {
+    public ResponseEntity<TraceResponse> testTracing() {
         log.info("Iniciando teste de tracing");
-        return observabilityDemoService.performSimpleOperation();
+        String result = observabilityDemoService.performSimpleOperation();
+        String traceId = resolveTraceId();
+
+        return ResponseEntity.ok()
+                .header("X-Trace-Id", traceId)
+                .body(new TraceResponse(result, traceId));
     }
 
     @GetMapping("/test-with-delay/{delayMs}")
@@ -51,14 +57,24 @@ public class ObservabilityDemoController {
 
     @GetMapping("/trace-info")
     public String getTraceInfo() {
-        String traceId = tracer.currentSpan() != null ?
-                tracer.currentSpan().context().traceId() : "N/A";
-        String spanId = tracer.currentSpan() != null ?
-                tracer.currentSpan().context().spanId() : "N/A";
+        String traceId = resolveTraceId();
+        String spanId = resolveSpanId();
 
         String info = String.format("Trace ID: %s, Span ID: %s", traceId, spanId);
         log.info(info);
         return info;
+    }
+
+    private String resolveTraceId() {
+        return tracer != null && tracer.currentSpan() != null
+                ? tracer.currentSpan().context().traceId()
+                : "N/A";
+    }
+
+    private String resolveSpanId() {
+        return tracer != null && tracer.currentSpan() != null
+                ? tracer.currentSpan().context().spanId()
+                : "N/A";
     }
 }
 
