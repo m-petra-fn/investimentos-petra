@@ -1,7 +1,7 @@
 <configuration>
     <!-- Defina os patterns antes do include do Spring Boot -->
     <property name="CONSOLE_LOG_PATTERN"
-              value="%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){green} %clr(%-5level){yellow} %clr(${PID:- }){magenta} %clr(---){faint} %clr([${APPLICATION_NAME}]){red} %clr([%15.15thread]){blue} %clr(%-40.40logger{39}){cyan} %clr([x-fapi-tracing){magenta}=%clr(%X{x-fapi-interaction-id:-n/a}){green}%clr(]){magenta} %clr(-){faint} %msg%n%wEx"/>
+              value="%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){green}  %clr(%-5level){yellow} %clr(${PID:- }){magenta} %clr(---){faint} %clr([${APPLICATION_NAME}]){red} %clr([%15.15thread]){blue} %clr(%-40.40logger{39}){cyan} %clr([x-fapi-tracing){magenta}=%clr(%X{x-fapi-interaction-id:-n/a}){green}%clr(]){magenta} %clr(-){faint} %msg%n%wEx"/>
 
     <!-- Inclui o base do Spring Boot (registra %clr e demais conversores) -->
     <include resource="org/springframework/boot/logging/logback/base.xml"/>
