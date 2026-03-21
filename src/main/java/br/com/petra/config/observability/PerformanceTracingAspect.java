@@ -67,7 +67,7 @@ public class PerformanceTracingAspect {
         }
     }
 
-    private Object executeWithTracing(ProceedingJoinPoint joinPoint, String layer, 
+    private Object executeWithTracing(ProceedingJoinPoint joinPoint, String layer,
                                       String className, String methodName,
                                       io.micrometer.tracing.Span span) throws Throwable {
         // Registrar tags de contexto
