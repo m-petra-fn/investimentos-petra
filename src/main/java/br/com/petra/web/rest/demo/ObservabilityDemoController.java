@@ -1,15 +1,19 @@
 package br.com.petra.web.rest.demo;
 
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.tracing.Span;
 import io.micrometer.tracing.Tracer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import jakarta.servlet.http.HttpServletRequest;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * Controlador de exemplo para demonstrar observabilidade e tracing.
@@ -27,9 +31,7 @@ public class ObservabilityDemoController {
 
     private final MeterRegistry meterRegistry;
     private final ObservabilityDemoService observabilityDemoService;
-
-    @Autowired(required = false)
-    private Tracer tracer;
+    private final Tracer tracer;
 
     @GetMapping("/test")
     public ResponseEntity<TraceResponse> testTracing() {
@@ -65,16 +67,35 @@ public class ObservabilityDemoController {
         return info;
     }
 
+    @GetMapping("/trace-diagnostics")
+    public Map<String, String> getTraceDiagnostics(HttpServletRequest request) {
+        Span currentSpan = tracer.currentSpan();
+        Map<String, String> diagnostics = new LinkedHashMap<>();
+        diagnostics.put("tracerBean", tracer.getClass().getName());
+        diagnostics.put("hasCurrentSpan", Boolean.toString(currentSpan != null));
+        diagnostics.put("traceId", currentSpan != null && currentSpan.context() != null ? currentSpan.context().traceId() : "N/A");
+        diagnostics.put("spanId", currentSpan != null && currentSpan.context() != null ? currentSpan.context().spanId() : "N/A");
+        diagnostics.put("incomingTraceparent", valueOrNA(request.getHeader("traceparent")));
+        diagnostics.put("incomingB3", valueOrNA(request.getHeader("b3")));
+        return diagnostics;
+    }
+
     private String resolveTraceId() {
-        return tracer != null && tracer.currentSpan() != null
-                ? tracer.currentSpan().context().traceId()
+        Span currentSpan = tracer.currentSpan();
+        return currentSpan != null && currentSpan.context() != null
+                ? currentSpan.context().traceId()
                 : "N/A";
     }
 
     private String resolveSpanId() {
-        return tracer != null && tracer.currentSpan() != null
-                ? tracer.currentSpan().context().spanId()
+        Span currentSpan = tracer.currentSpan();
+        return currentSpan != null && currentSpan.context() != null
+                ? currentSpan.context().spanId()
                 : "N/A";
+    }
+
+    private String valueOrNA(String value) {
+        return value == null || value.isBlank() ? "N/A" : value;
     }
 }
 

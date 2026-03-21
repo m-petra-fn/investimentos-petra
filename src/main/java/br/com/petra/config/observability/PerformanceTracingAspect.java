@@ -11,7 +11,6 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -27,9 +26,7 @@ import org.springframework.stereotype.Component;
 public class PerformanceTracingAspect {
 
     private final MeterRegistry meterRegistry;
-    
-    @Autowired(required = false)
-    private Tracer tracer;
+    private final Tracer tracer;
 
     /**
      * Rastreia tempo de execução de métodos em Controllers
@@ -64,15 +61,9 @@ public class PerformanceTracingAspect {
         String className = joinPoint.getTarget().getClass().getSimpleName();
         String operationName = className + "." + methodName;
 
-        // Se o Tracer está disponível, criar um span
-        if (tracer != null) {
-            var span = tracer.nextSpan().name(operationName);
-            try (var _ignored = tracer.withSpan(span.start())) {
-                return executeWithTracing(joinPoint, layer, className, methodName, span);
-            }
-        } else {
-            // Fallback: apenas registrar métricas sem tracing
-            return executeWithoutTracing(joinPoint, layer, className, methodName);
+        var span = tracer.nextSpan().name(operationName);
+        try (var _ignored = tracer.withSpan(span.start())) {
+            return executeWithTracing(joinPoint, layer, className, methodName, span);
         }
     }
 
@@ -101,26 +92,6 @@ public class PerformanceTracingAspect {
                 .tag("error", e.getClass().getSimpleName())
                 .event("exception");
 
-            log.error("{}.{} falhou após {} ms: {}", className, methodName, 
-                    duration / 1_000_000.0, e.getMessage());
-            throw e;
-        }
-    }
-
-    private Object executeWithoutTracing(ProceedingJoinPoint joinPoint, String layer, 
-                                         String className, String methodName) throws Throwable {
-        long startTime = System.nanoTime();
-        try {
-            Object result = joinPoint.proceed();
-            long duration = System.nanoTime() - startTime;
-            
-            recordMetric(duration, layer, className, methodName);
-            log.debug("{}.{} executado em {} ms (sem tracing distribuído)", className, methodName, duration / 1_000_000.0);
-
-            return result;
-        } catch (Exception e) {
-            long duration = System.nanoTime() - startTime;
-            recordMetric(duration, layer, className, methodName);
             log.error("{}.{} falhou após {} ms: {}", className, methodName, 
                     duration / 1_000_000.0, e.getMessage());
             throw e;

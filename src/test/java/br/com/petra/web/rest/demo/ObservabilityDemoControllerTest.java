@@ -9,7 +9,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -40,8 +39,7 @@ class ObservabilityDemoControllerTest {
         when(span.context()).thenReturn(traceContext);
         when(traceContext.traceId()).thenReturn("trace-123");
 
-        ObservabilityDemoController controller = new ObservabilityDemoController(meterRegistry, observabilityDemoService);
-        ReflectionTestUtils.setField(controller, "tracer", tracer);
+        ObservabilityDemoController controller = new ObservabilityDemoController(meterRegistry, observabilityDemoService, tracer);
 
         ResponseEntity<TraceResponse> response = controller.testTracing();
 
