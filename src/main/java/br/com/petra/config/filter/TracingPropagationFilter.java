@@ -3,6 +3,7 @@ package br.com.petra.config.filter;
 import brave.Tracing;
 import brave.propagation.TraceContext;
 import brave.propagation.TraceContextOrSamplingFlags;
+import io.micrometer.common.util.StringUtils;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -39,6 +40,8 @@ public class TracingPropagationFilter extends OncePerRequestFilter {
         if (fapiInteractionId != null && !fapiInteractionId.isBlank()) {
             // Tag no span raiz para facilitar query no Zipkin.
             span.tag(ZIPKIN_TAG_FAPI_INTERACTION_ID, fapiInteractionId);
+            // Adicionar como baggage remoto para propagação automática
+            span.remoteIpAndPort(request.getRemoteAddr(), request.getRemotePort());
         }
 
         try (var ignored = tracing.currentTraceContext().newScope(span.context())) {
