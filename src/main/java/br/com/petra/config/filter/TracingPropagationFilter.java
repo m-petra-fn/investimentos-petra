@@ -31,7 +31,7 @@ public class TracingPropagationFilter extends OncePerRequestFilter {
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         String requestPath = request.getRequestURI();
         // Pular tracing para /actuator/** e /swagger-ui** para evitar poluição do Zipkin
-        return requestPath == null || (!requestPath.contains("actuator") && !requestPath.contains("swagger"));
+        return requestPath != null && (requestPath.contains("actuator") || requestPath.contains("swagger"));
     }
 
     @Override
