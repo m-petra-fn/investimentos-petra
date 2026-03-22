@@ -8,8 +8,12 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.server.observation.ServerRequestObservationContext;
 
+import java.util.Set;
+
 @Configuration
 public class ActuatorObservationFilterConfig {
+
+    private static final Set<String> EXCLUDED_PATHS = Set.of("actuator", "swagger", "api-docs", "favicon.ico");
 
     @Bean
     ObservationPredicate skipActuatorFromHttpServerObservation() {
@@ -27,7 +31,11 @@ public class ActuatorObservationFilterConfig {
         }
 
         String path = request.getRequestURI();
-        return StringUtils.isNotBlank(path) && path.startsWith("/actuator");
+        return isFilteredPath(path);
+    }
+
+    public static boolean isFilteredPath(String path) {
+        return StringUtils.isNotBlank(path) && EXCLUDED_PATHS.stream().anyMatch(path::contains);
     }
 }
 
