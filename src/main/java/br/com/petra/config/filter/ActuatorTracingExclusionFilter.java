@@ -22,7 +22,7 @@ public class ActuatorTracingExclusionFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         String requestPath = request.getRequestURI();
-        return requestPath != null && requestPath.startsWith("/actuator/");
+        return requestPath == null || (!requestPath.contains("actuator") && !requestPath.contains("swagger"));
     }
 
     @Override
