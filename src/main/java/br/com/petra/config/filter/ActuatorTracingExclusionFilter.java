@@ -1,5 +1,6 @@
 package br.com.petra.config.filter;
 
+import io.micrometer.common.util.StringUtils;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,7 +23,7 @@ public class ActuatorTracingExclusionFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         String requestPath = request.getRequestURI();
-        return requestPath != null && requestPath.contains("actuator");
+        return StringUtils.isNotBlank(requestPath) && requestPath.contains("actuator");
     }
 
     @Override

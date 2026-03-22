@@ -3,6 +3,7 @@ package br.com.petra.config.filter;
 import brave.Tracing;
 import brave.propagation.TraceContext;
 import brave.propagation.TraceContextOrSamplingFlags;
+import io.micrometer.common.util.StringUtils;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -31,7 +32,7 @@ public class TracingPropagationFilter extends OncePerRequestFilter {
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         String requestPath = request.getRequestURI();
         // Pular tracing para /actuator/** e /swagger-ui** para evitar poluição do Zipkin
-        return requestPath != null && (requestPath.contains("actuator") || requestPath.contains("swagger"));
+        return StringUtils.isNotBlank(requestPath) && (requestPath.contains("actuator") || requestPath.contains("swagger"));
     }
 
     @Override
