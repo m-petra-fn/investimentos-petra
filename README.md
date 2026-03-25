@@ -70,3 +70,51 @@ No Windows PowerShell:
 
 - URL: `http://localhost:8080/swagger-ui.html`
 
+## Observabilidade e Tracing (Micrometer)
+
+Esse projeto agora esta instrumentado com Micrometer para voce medir tempo por camada (`web`, `service`, `repository`) e correlacionar logs com `traceId`/`spanId`.
+
+### O que foi adicionado
+
+- Aspecto `LayerTimingAspect` para criar observacoes em todas as chamadas de:
+    - `br.com.petra.web..*`
+    - `br.com.petra.service..*`
+    - `br.com.petra.repository..*`
+- Endpoint Prometheus: `GET /actuator/prometheus`
+- Endpoint de metricas: `GET /actuator/metrics`
+- Tracing com amostragem em 100% para facilitar testes locais
+
+### Como ver funcionando
+
+1. Suba a aplicacao:
+
+```powershell
+.\mvnw.cmd spring-boot:run
+```
+
+2. Faça uma chamada de negocio (ex.: listar investimentos):
+
+```powershell
+Invoke-RestMethod -Method Get -Uri "http://localhost:8080/api/investimentos?page=0&size=5"
+```
+
+3. Veja as metricas disponiveis:
+
+```powershell
+Invoke-RestMethod -Method Get -Uri "http://localhost:8080/actuator/metrics"
+```
+
+4. Inspecione a metrica customizada de camada:
+
+```powershell
+Invoke-RestMethod -Method Get -Uri "http://localhost:8080/actuator/metrics/app.layer.execution"
+```
+
+5. Confira a saida Prometheus:
+
+```powershell
+Invoke-WebRequest -Uri "http://localhost:8080/actuator/prometheus" | Select-Object -ExpandProperty Content
+```
+
+Nos logs da aplicacao, cada request deve aparecer com `traceId` e `spanId`, facilitando seguir o fluxo completo.
+
