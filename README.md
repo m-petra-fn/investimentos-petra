@@ -59,6 +59,19 @@ No Windows PowerShell:
 .\mvnw.cmd spring-boot:run
 ```
 
+## Redis Cache
+
+- O `compose.yaml` inclui um servico `redis` na porta `6379`.
+- O projeto usa cache de forma explicita na camada de servico (sem `@Cacheable`).
+- Leituras de `findById` e listagens paginadas sao cacheadas com TTL.
+- Operacoes de escrita invalidam as chaves relacionadas.
+
+Subir apenas o Redis:
+
+```powershell
+docker compose up -d redis
+```
+
 ## Console H2
 
 - URL: `http://localhost:8080/h2-console`
