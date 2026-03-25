@@ -62,7 +62,7 @@ No Windows PowerShell:
 ## Redis Cache
 
 - O `compose.yaml` inclui um servico `redis` na porta `6379`.
-- O projeto usa cache de forma explicita na camada de servico (sem `@Cacheable`).
+- O projeto usa cache declarativo com `@Cacheable` e `@CacheEvict`.
 - Leituras de `findById` e listagens paginadas sao cacheadas com TTL.
 - Operacoes de escrita invalidam as chaves relacionadas.
 
