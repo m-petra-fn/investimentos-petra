@@ -11,7 +11,6 @@ import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.serializer.GenericJacksonJsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
-import tools.jackson.databind.json.JsonMapper;
 
 @Configuration
 @EnableConfigurationProperties(CacheRedisProperties.class)
@@ -19,11 +18,16 @@ public class CacheConfig {
 
     @Bean
     @ConditionalOnProperty(prefix = "app.cache.redis", name = "enabled", havingValue = "true", matchIfMissing = true)
-    CacheManager redisCacheManager(RedisConnectionFactory connectionFactory, CacheRedisProperties properties, JsonMapper jsonMapper) {
+    CacheManager redisCacheManager(RedisConnectionFactory connectionFactory, CacheRedisProperties properties) {
+        GenericJacksonJsonRedisSerializer serializer = GenericJacksonJsonRedisSerializer.builder()
+                .typePropertyName("@class")
+                .enableUnsafeDefaultTyping()
+                .build();
+
         RedisCacheConfiguration cacheConfiguration = RedisCacheConfiguration.defaultCacheConfig()
                 .entryTtl(properties.getTtl())
                 .computePrefixWith(cacheName -> properties.getKeyPrefix() + ":" + cacheName + ":")
-                .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new GenericJacksonJsonRedisSerializer(jsonMapper)));
+                .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(serializer));
 
         return RedisCacheManager.builder(connectionFactory)
                 .cacheDefaults(cacheConfiguration)
