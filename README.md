@@ -65,6 +65,17 @@ No Windows PowerShell:
 - O projeto usa cache declarativo com `@Cacheable` e `@CacheEvict`.
 - Leituras de `findById` e listagens paginadas sao cacheadas com TTL.
 - Operacoes de escrita invalidam as chaves relacionadas.
+- O Redis cache manager esta com estatisticas habilitadas, expondo hit/miss em metricas Micrometer.
+
+Ver hit/miss por cache via actuator:
+
+```powershell
+Invoke-RestMethod -Method Get -Uri "http://localhost:8080/actuator/metrics/cache.gets"
+Invoke-RestMethod -Method Get -Uri "http://localhost:8080/actuator/metrics/cache.gets?tag=cache:investimento-by-id&tag=result:hit"
+Invoke-RestMethod -Method Get -Uri "http://localhost:8080/actuator/metrics/cache.gets?tag=cache:investimento-by-id&tag=result:miss"
+```
+
+No Prometheus, a serie costuma aparecer como `cache_gets_total` com tag `result` (`hit`/`miss`).
 
 Subir apenas o Redis:
 
